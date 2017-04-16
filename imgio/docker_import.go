@@ -1,6 +1,7 @@
 package imgio
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -9,12 +10,12 @@ import (
 	"path/filepath"
 
 	"github.com/docker/docker/image"
-	"github.com/docker/docker/pkg/archive"
 	digest "github.com/opencontainers/go-digest"
 	"github.com/pkg/errors"
 
 	om "github.com/box-builder/overmount"
 	"github.com/box-builder/overmount/configmap"
+	"github.com/box-builder/tarutil"
 )
 
 type unpackedImage struct {
@@ -36,7 +37,7 @@ func (d *Docker) Import(r *om.Repository, reader io.ReadCloser) ([]*om.Layer, er
 
 	defer os.RemoveAll(tempdir)
 
-	if err := archive.Untar(reader, tempdir, &archive.TarOptions{NoLchown: os.Geteuid() != 0}); err != nil {
+	if err := tarutil.UnpackTar(context.Background(), reader, tempdir, &tarutil.Options{NoLchown: os.Geteuid() != 0}); err != nil {
 		return nil, err
 	}
 

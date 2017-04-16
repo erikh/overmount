@@ -1,9 +1,11 @@
 package overmount
 
 import (
+	"context"
 	"io"
 	"os"
 
+	"github.com/box-builder/tarutil"
 	"github.com/docker/docker/pkg/archive"
 	digest "github.com/opencontainers/go-digest"
 	"github.com/pkg/errors"
@@ -121,7 +123,7 @@ func (a *Asset) Unpack(reader io.Reader) error {
 		}
 
 		// FIXME there's probably a double-unarchive bug here.
-		err := archive.Unpack(tee, a.path, &archive.TarOptions{NoLchown: os.Geteuid() != 0})
+		err := tarutil.UnpackTar(context.Background(), tee, a.path, &tarutil.Options{NoLchown: os.Geteuid() != 0})
 		if err != nil {
 			return err
 		}
