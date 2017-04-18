@@ -252,10 +252,13 @@ func (d *Docker) writeImageConfig(chainID digest.Digest, diffIDs []digest.Digest
 	}
 
 	err = tw.WriteHeader(&tar.Header{
-		Name:     fmt.Sprintf("%s.json", chainID.Hex()),
-		Mode:     0600,
-		Typeflag: tar.TypeReg,
-		Size:     int64(len(content)),
+		Name:       fmt.Sprintf("%s.json", chainID.Hex()),
+		Mode:       0600,
+		Typeflag:   tar.TypeReg,
+		Size:       int64(len(content)),
+		ModTime:    img.Created,
+		ChangeTime: img.Created,
+		AccessTime: img.Created,
 	})
 	if err != nil {
 		return err

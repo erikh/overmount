@@ -16,7 +16,7 @@ import (
 
 func (d *dockerSuite) TestOCIExport(c *C) {
 	images := map[string][]string{
-		"golang":          []string{"/bin/bash"}, // should have two images
+		"golang:latest":   []string{"/bin/bash"}, // should have two images
 		"alpine:latest":   nil,                   // squashed image, single layer
 		"postgres:latest": []string{"postgres"},  // just a fatty
 	}

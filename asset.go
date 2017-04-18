@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/box-builder/tarutil"
-	"github.com/docker/docker/pkg/archive"
 	digest "github.com/opencontainers/go-digest"
 	"github.com/pkg/errors"
 )
@@ -79,7 +78,8 @@ func (a *Asset) LoadDigest() (digest.Digest, error) {
 			return a.Digest(), err
 		}
 
-		reader, err = archive.Tar(a.path, archive.Uncompressed)
+		err = tarutil.Pack(context.Background(), a.path, a.digest.Hash())
+		return a.Digest(), err
 	}
 
 	if err != nil {
@@ -155,12 +155,8 @@ func (a *Asset) Pack(writer io.Writer) error {
 			return err
 		}
 
-		reader, err := archive.TarWithOptions(a.path, &archive.TarOptions{})
+		err := tarutil.Pack(context.Background(), a.path, io.MultiWriter(writer, a.digest.Hash()))
 		if err != nil {
-			return err
-		}
-
-		if _, err := io.Copy(writer, io.TeeReader(reader, a.digest.Hash())); err != nil {
 			return err
 		}
 	}
