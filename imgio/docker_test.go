@@ -126,6 +126,8 @@ func (d *dockerSuite) TestDockerImportExport(c *C) {
 				if ok && stream == fmt.Sprintf("Loaded image: %s\n", numberedTaggedImage) {
 					found = true
 					break
+				} else if ok {
+					fmt.Println(stream)
 				}
 			}
 

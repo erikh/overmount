@@ -122,6 +122,7 @@ func (d *Docker) packLayer(chainID digest.Digest, tf *os.File, tw *tar.Writer) e
 	}
 
 	if _, err := io.Copy(tw, tf); err != nil {
+		fmt.Fprintln(os.Stderr, "here")
 		return err
 	}
 
@@ -154,6 +155,7 @@ func (d *Docker) writeLayerConfig(chainID digest.Digest, parentID digest.Digest,
 	}
 
 	if _, err := tw.Write(content); err != nil {
+		fmt.Fprintln(os.Stderr, "here")
 		return err
 	}
 

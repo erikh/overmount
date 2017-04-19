@@ -37,7 +37,7 @@ func (d *Docker) Import(r *om.Repository, reader io.ReadCloser) ([]*om.Layer, er
 
 	defer os.RemoveAll(tempdir)
 
-	if err := tarutil.UnpackTar(context.Background(), reader, tempdir, &tarutil.Options{NoLchown: os.Geteuid() != 0}); err != nil {
+	if err := tarutil.Unpack(context.Background(), reader, tempdir, &tarutil.Options{NoLchown: os.Geteuid() != 0}); err != nil {
 		return nil, err
 	}
 

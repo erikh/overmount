@@ -1,6 +1,7 @@
 package overmount
 
 import (
+	"bufio"
 	"context"
 	"io"
 	"os"
@@ -78,7 +79,12 @@ func (a *Asset) LoadDigest() (digest.Digest, error) {
 			return a.Digest(), err
 		}
 
-		err = tarutil.Pack(context.Background(), a.path, a.digest.Hash())
+		reader, err := tarutil.Pack(context.Background(), a.path)
+		if err != nil {
+			return a.Digest(), err
+		}
+
+		_, err = io.Copy(a.digest.Hash(), reader)
 		return a.Digest(), err
 	}
 
@@ -123,7 +129,7 @@ func (a *Asset) Unpack(reader io.Reader) error {
 		}
 
 		// FIXME there's probably a double-unarchive bug here.
-		err := tarutil.UnpackTar(context.Background(), tee, a.path, &tarutil.Options{NoLchown: os.Geteuid() != 0})
+		err := tarutil.Unpack(context.Background(), tee, a.path, &tarutil.Options{NoLchown: os.Geteuid() != 0})
 		if err != nil {
 			return err
 		}
@@ -155,8 +161,12 @@ func (a *Asset) Pack(writer io.Writer) error {
 			return err
 		}
 
-		err := tarutil.Pack(context.Background(), a.path, io.MultiWriter(writer, a.digest.Hash()))
+		reader, err := tarutil.Pack(context.Background(), a.path)
 		if err != nil {
+			return err
+		}
+
+		if _, err := io.Copy(writer, bufio.NewReader(io.TeeReader(reader, a.digest.Hash()))); err != nil {
 			return err
 		}
 	}
