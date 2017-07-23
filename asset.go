@@ -83,6 +83,7 @@ func (a *Asset) LoadDigest() (digest.Digest, error) {
 		if err != nil {
 			return a.Digest(), err
 		}
+		defer reader.Close()
 
 		_, err = io.Copy(a.digest.Hash(), reader)
 		return a.Digest(), err
@@ -165,6 +166,7 @@ func (a *Asset) Pack(writer io.Writer) error {
 		if err != nil {
 			return err
 		}
+		defer reader.Close()
 
 		if _, err := io.Copy(writer, bufio.NewReader(io.TeeReader(reader, a.digest.Hash()))); err != nil {
 			return err

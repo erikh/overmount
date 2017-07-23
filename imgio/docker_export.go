@@ -56,6 +56,8 @@ func (d *Docker) writeTar(repo *om.Repository, layer *om.Layer, w *io.PipeWriter
 			return "", "", 0, err
 		}
 
+		fmt.Fprintln(os.Stderr, diffID, iter.Parent)
+
 		if err := d.packLayer(chainID, tf, tw); err != nil {
 			return "", "", 0, err
 		}
@@ -130,18 +132,30 @@ func (d *Docker) packLayer(chainID digest.Digest, tf *os.File, tw *tar.Writer) e
 }
 
 func (d *Docker) writeLayerConfig(chainID digest.Digest, parentID digest.Digest, iter *om.Layer, tw *tar.Writer) error {
-	var parent string
-	if parentID != "" {
-		parent = parentID.Hex()
-	}
+	var (
+		parent  string
+		content []byte
+		err     error
+	)
 
-	content, err := json.Marshal(map[string]interface{}{
-		"id":     chainID.Hex(),
-		"parent": parent,
-		"config": v1.ImageConfig{},
-	})
-	if err != nil {
-		return err
+	if iter.Parent != nil {
+		parent = parentID.Hex()
+		content, err = json.Marshal(map[string]interface{}{
+			"id":     chainID.Hex(),
+			"parent": parent,
+			"config": v1.ImageConfig{},
+		})
+		if err != nil {
+			return err
+		}
+	} else {
+		content, err = json.Marshal(map[string]interface{}{
+			"id":     chainID.Hex(),
+			"config": v1.ImageConfig{},
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	err = tw.WriteHeader(&tar.Header{

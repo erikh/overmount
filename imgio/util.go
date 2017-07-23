@@ -8,18 +8,20 @@ import (
 	digest "github.com/opencontainers/go-digest"
 )
 
+const emptyDigest = digest.Digest("sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+
 func calcLayer(parentDigest digest.Digest, iter *om.Layer, tf *os.File) (digest.Digest, digest.Digest, error) {
 	packDigest, err := iter.Pack(tf)
 	if err != nil {
 		return "", "", err
 	}
 
-	hexDigest := ""
-	if parentDigest != "" {
-		hexDigest = parentDigest.Hex()
+	var chainID digest.Digest
+	if iter.Parent != nil {
+		chainID = digest.FromBytes([]byte(parentDigest.Hex() + " " + string(packDigest.Hex())))
+	} else {
+		chainID = packDigest
 	}
-
-	chainID := digest.FromBytes([]byte(string(hexDigest) + " " + string(packDigest.Hex())))
 
 	return chainID, packDigest, nil
 }

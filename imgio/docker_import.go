@@ -58,7 +58,6 @@ func (d *Docker) constructImage(r *om.Repository, up *unpackedImage) ([]*om.Laye
 	for layerID, layer := range up.layers {
 		if parent, ok := up.layers[up.chainParentMap[layerID]]; ok {
 			layer.Parent = parent
-
 			if err := layer.SaveParent(); err != nil {
 				return nil, err
 			}
